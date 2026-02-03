@@ -69,7 +69,7 @@ class State(TypedDict):
 
 # ---------- LLM ----------
 llm = ChatGroq(
-    model="llama-3.1-8b-instant",
+    model="llama-3.3-70b-versatile",
     temperature=0.7,
     api_key=GROQ_API_KEY
 )
@@ -81,9 +81,14 @@ def orchestrator(state: State):
         [
             SystemMessage(
                 content=(
-                    "Create a blog plan with 5 sections. "
-                    "Return blog title and tasks."
-                    "add a summary brief at the end of the blog."
+                   "You are an expert Content Strategist and SEO Copywriter. "
+                    "Your goal is to create highly engaging, structured blog plans. "
+                    "For the given topic, provide: "
+                    "1. A good, catchy description as the blog title. "
+                    "2. A 4-5 section outline with descriptive headings. "
+                    "3. Key 'Tasks' or talking points for each section to ensure depth. "
+                    "4. A 'Summary Brief' at the end that captures the core takeaway. "
+                    "Tone: Professional, helpful, and creative."
                 )
             ),
             HumanMessage(content=f"Topic: {state['topic']}"),
@@ -111,7 +116,9 @@ def worker(payload: dict):
 
     section_md = llm.invoke(
         [
-            SystemMessage(content="Write a clean Markdown section."),
+            SystemMessage(
+                content= "You are a professional blog writer. "
+                    "Write in a clean, high-quality Markdown format. "),
             HumanMessage(
                 content=(
                     f"Blog: {plan.blog_title}\n"
@@ -158,7 +165,7 @@ st.header("📝 Blog Writing Assistant")
 
 topic = st.text_input(
     "Enter blog topic:",
-    placeholder="Example: Future of AI in Healthcare"
+    placeholder="Example: Future of AI in Healthcare."
 )
 
 generate_btn = st.button("🚀 Generate Blog")
@@ -195,4 +202,5 @@ if generate_btn and topic:
             file_name="blog.md",
             mime="text/markdown",
         )
+
 
