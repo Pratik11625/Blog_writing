@@ -20,6 +20,29 @@ from langchain_core.messages import SystemMessage, HumanMessage
 load_dotenv()
 import torch
 
+# 1. Render the sidebar title
+st.sidebar.title("📝 Blog Writing Assistant")
+
+# 2. Use the sidebar context for inputs
+with st.sidebar:
+    # Toggle for Environment Variable vs Manual Input
+    use_env_key = st.toggle("Use System API Key")
+    
+    if use_env_key:
+        GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+        if GROQ_API_KEY:
+            st.success("API Key loaded from environment!")
+        else:
+            st.error("No API Key found in environment variables.")
+    else:
+        GROQ_API_KEY = st.text_input(
+            "Enter Groq API Key", 
+            type="password", 
+            key="groq_api_key_input"
+        )
+        if GROQ_API_KEY:
+            st.info("Manual API Key active.")
+
 # Load the pipeline
 if torch.cuda.is_available():
     torch_dtype = torch.bfloat16
@@ -48,7 +71,7 @@ class State(TypedDict):
 llm = ChatGroq(
     model="llama-3.1-8b-instant",
     temperature=0.7,
-    api_key=os.getenv("GROQ_API_KEY"),
+    api_key=GROQ_API_KEY
 )
 
 # ---------- Orchestrator ----------
@@ -157,8 +180,6 @@ if generate_btn and topic:
         progress.progress(90)
         status.write("✍️ Finalizing blog...")
 
-        # final_blog = out["final"]
-
         progress.progress(100)
         # status.write("✅ Blog ready!")
 
@@ -174,3 +195,4 @@ if generate_btn and topic:
             file_name="blog.md",
             mime="text/markdown",
         )
+
